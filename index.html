@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RuneScape Bingo Team Draft</title>
+  <style>
+    :root {
+      --bg-0: #0b1220;
+      --bg-1: #111a2b;
+      --surface: #152036;
+      --surface-2: #1b2740;
+      --surface-3: #243250;
+      --text: #e8eefc;
+      --muted: #a9b8d6;
+      --border: #2f4268;
+      --accent: #72a8ff;
+      --accent-strong: #5d9bff;
+      --success: #61d3a2;
+      --danger: #ff8b99;
+      --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.25);
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 12px;
+      --radius-sm: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, rgba(114, 168, 255, 0.16), transparent 50%),
+        radial-gradient(1200px 600px at 90% 110%, rgba(93, 155, 255, 0.12), transparent 50%),
+        linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 100%);
+      line-height: 1.45;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    .screen {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---------- Setup screen ---------- */
+    #setupScreen {
+      align-items: center;
+      justify-content: center;
+      padding: 28px 20px;
+    }
+
+    .setup-card {
+      width: min(940px, 100%);
+      background: linear-gradient(180deg, rgba(26, 39, 64, 0.92), rgba(21, 32, 54, 0.95));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      padding: 24px;
+      backdrop-filter: blur(4px);
+    }
+
+    .setup-headline {
+      font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+      font-weight: 750;
+      letter-spacing: 0.2px;
+    }
+
+    .setup-subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .setup-grid {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+
+    .field-full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: 0.93rem;
+      font-weight: 550;
+      letter-spacing: 0.1px;
+    }
+
+    .setup-input,
+    .setup-textarea,
+    #addPlayerInput {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(20, 30, 50, 0.95), rgba(16, 25, 42, 0.95));
+      color: var(--text);
+      padding: 0.78rem 0.9rem;
+      outline: none;
+      font: inherit;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.05s ease;
+    }
+
+    .setup-input:focus,
+    .setup-textarea:focus,
+    #addPlayerInput:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(114, 168, 255, 0.22);
+    }
+
+    .setup-textarea {
+      margin-top: 2px;
+      min-height: 240px;
+      resize: vertical;
+      line-height: 1.35;
+    }
+
+    .setup-actions {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn,
+    .ghost-btn,
+    .primary-btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.62rem 1rem;
+      font-weight: 650;
+      cursor: pointer;
+      transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+    }
+
+    .btn,
+    .primary-btn {
+      background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+      color: #0b1220;
+      box-shadow: 0 8px 20px rgba(93, 155, 255, 0.28);
+    }
+
+    .btn:hover,
+    .primary-btn:hover,
+    .ghost-btn:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn:active,
+    .primary-btn:active,
+    .ghost-btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn.secondary,
+    .ghost-btn {
+      background: rgba(19, 29, 47, 0.8);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+
+    #backToSetupBtn,
+    #coinBtn {
+      white-space: nowrap;
+      line-height: 1.1;
+      height: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: max-content;
+      max-width: none;
+      overflow: visible;
+      text-overflow: clip;
+      padding-left: 18px;
+      padding-right: 18px;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .team.on-clock {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(114, 168, 255, 0.35), var(--shadow-md);
+    }
+
+    .team.on-clock .team-header {
+      background: linear-gradient(180deg, rgba(35, 57, 98, 0.45), rgba(28, 43, 74, 0.25));
+      border-bottom-color: rgba(114, 168, 255, 0.55);
+    }
+
+    .team.on-clock .team-title::after {
+      content: "Choosing";
+      margin-left: 8px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--accent);
+      border: 1px solid rgba(114, 168, 255, 0.6);
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: rgba(14, 23, 39, 0.6);
+      letter-spacing: 0.1px;
+      flex: 0 0 auto;
+    }
+
+    .team.turn-denied {
+      animation: deniedPulse 0.72s ease-out;
+    }
+
+    .team.turn-accepted {
+      animation: acceptedPulse 0.72s ease-out;
+    }
+
+    @keyframes acceptedPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(103, 217, 159, 0), var(--shadow-md);
+      }
+      45% {
+        box-shadow: 0 0 0 4px rgba(103, 217, 159, 0.95), var(--shadow-md);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(103, 217, 159, 0), var(--shadow-md);
+      }
+    }
+
+    @keyframes deniedPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(255, 139, 153, 0), var(--shadow-md);
+      }
+      45% {
+        box-shadow: 0 0 0 4px rgba(255, 139, 153, 0.9), var(--shadow-md);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(255, 139, 153, 0), var(--shadow-md);
+      }
+    }
+
+    #setupError {
+      min-height: 1.2em;
+      margin-top: 4px;
+      color: var(--danger);
+      font-size: 0.92rem;
+      font-weight: 550;
+    }
+
+    /* ---------- App screen ---------- */
+    #appScreen {
+      min-height: 100vh;
+    }
+
+    #appScreen,
+    #appScreen * {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      min-height: 74px;
+      display: grid;
+      grid-template-columns: var(--side-slot, 210px) minmax(0, 1fr) var(--side-slot, 210px);
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      background: linear-gradient(180deg, rgba(16, 24, 39, 0.95), rgba(16, 24, 39, 0.85));
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    #bingoTitleDisplay {
+      text-align: center;
+      font-size: clamp(1.08rem, 2vw, 1.35rem);
+      font-weight: 760;
+      letter-spacing: 0.3px;
+      line-height: 1.24;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 10px 2px;
+      width: 100%;
+      justify-self: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+    }
+
+    #backToSetupBtn {
+      justify-self: start;
+    }
+
+    #coinBtn {
+      justify-self: end;
+    }
+
+    .board-wrap {
+      width: min(1320px, 100%);
+      margin: 0 auto;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+      flex: 1;
+    }
+
+    .panel,
+    .team {
+      background: linear-gradient(180deg, rgba(28, 42, 70, 0.9), rgba(21, 32, 54, 0.92));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      min-height: 520px;
+      overflow: hidden;
+    }
+
+    .panel-header,
+    .team-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(47, 66, 104, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .panel-title,
+    .team-title {
+      font-size: 1.07rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .team-title-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .count-pill {
+      font-size: 0.82rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: rgba(18, 28, 46, 0.7);
+      flex: 0 0 auto;
+    }
+
+    .name-list {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-content: start;
+      height: calc(100% - 53px);
+      overflow-y: auto;
+    }
+
+    .team {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .team-players {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 200px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .team.drop-target-active .team-players,
+    .panel.drop-target-active .name-list {
+      outline: 2px dashed rgba(114, 168, 255, 0.85);
+      outline-offset: -4px;
+      border-radius: 10px;
+      background: rgba(114, 168, 255, 0.06);
+    }
+
+    .name {
+      background: linear-gradient(180deg, rgba(40, 56, 89, 0.95), rgba(32, 46, 75, 0.95));
+      border: 1px solid #3d5585;
+      border-radius: 11px;
+      padding: 9px 10px;
+      user-select: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 560;
+      letter-spacing: 0.1px;
+      cursor: grab;
+      transition: transform 0.05s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .name:hover {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, rgba(45, 64, 102, 0.95), rgba(35, 51, 82, 0.95));
+    }
+
+    .name:active {
+      cursor: grabbing;
+    }
+
+    .team .name {
+      cursor: default;
+      border-color: #456090;
+    }
+
+    .team.can-tap-remove .name {
+      cursor: pointer;
+    }
+
+    .team:not(.can-tap-remove) .name {
+      cursor: not-allowed;
+    }
+
+    .team .name[data-in-team="true"] {
+      background: linear-gradient(180deg, rgba(47, 67, 108, 0.95), rgba(37, 54, 88, 0.95));
+    }
+
+    #bottomControlsWrapper {
+      border-top: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(19, 29, 47, 0.9), rgba(15, 23, 38, 0.92));
+    }
+
+    #addPlayerControls {
+      width: min(1320px, 100%);
+      margin: 0 auto;
+      padding: 14px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* ---------- Coin modal ---------- */
+    #coinModal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(4, 10, 20, 0.72);
+      z-index: 80;
+    }
+
+    #coinModal.open {
+      display: flex;
+    }
+
+    #coinModalCard {
+      width: min(460px, 96vw);
+      background: linear-gradient(180deg, rgba(28, 42, 70, 0.98), rgba(21, 32, 54, 0.98));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 18px;
+      position: relative;
+    }
+
+    #coinClose {
+      position: absolute;
+      top: 6px;
+      right: 9px;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0.9;
+    }
+
+    #coinResult {
+      text-align: center;
+      font-size: 2.1rem;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      padding: 12px 0 16px;
+    }
+
+    #coinControls {
+      display: flex;
+      justify-content: center;
+    }
+
+    #coinVisual {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0 2px;
+      perspective: 1000px;
+    }
+
+    #coin3d {
+      width: 118px;
+      height: 118px;
+      position: relative;
+      border-radius: 50%;
+      transform-style: preserve-3d;
+      transition: transform 300ms ease;
+      --end-rot: 0deg;
+    }
+
+    #coin3d::before,
+    #coin3d::after {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      backface-visibility: hidden;
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.15), inset 0 -4px 16px rgba(0, 0, 0, 0.45), 0 6px 18px rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 27px;
+      letter-spacing: 0.6px;
+      color: rgba(20, 24, 32, 0.95);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35), 0 2px 8px rgba(0, 0, 0, 0.45);
+    }
+
+    #coin3d::before {
+      content: "HEADS";
+      background: radial-gradient(circle at 30% 30%, #ffeaa7, #d4af37 60%, #8d6e14);
+      transform: translateZ(3px);
+    }
+
+    #coin3d::after {
+      content: "TAILS";
+      background: radial-gradient(circle at 30% 30%, #b7c9ff, #6aa3ff 60%, #2a4a7a);
+      transform: rotateY(180deg) translateZ(3px);
+    }
+
+    #coin3d.heads,
+    #coin3d.tails {
+      transform: rotateY(var(--end-rot));
+    }
+
+    @keyframes coinSpin {
+      0% {
+        transform: rotateY(0deg);
+      }
+      100% {
+        transform: rotateY(calc(1800deg + var(--end-rot)));
+      }
+    }
+
+    #coin3d.flipping {
+      animation: coinSpin 5s cubic-bezier(.2, .8, .2, 1) forwards;
+    }
+
+
+    /* ---------- Remove modal ---------- */
+    #removeModal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(4, 10, 20, 0.72);
+      z-index: 90;
+    }
+
+    #removeModal.open {
+      display: flex;
+    }
+
+    #removeModalCard {
+      width: min(460px, 96vw);
+      background: linear-gradient(180deg, rgba(28, 42, 70, 0.98), rgba(21, 32, 54, 0.98));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 18px;
+      position: relative;
+    }
+
+    #removeClose {
+      position: absolute;
+      top: 6px;
+      right: 9px;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0.9;
+    }
+
+    #removeModalCard h3 {
+      margin-right: 22px;
+    }
+
+    #removePrompt {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    #removeActions {
+      margin-top: 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1120px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .panel,
+      .team {
+        min-height: 340px;
+      }
+
+      .name-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 820px) {
+      .setup-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        min-height: 68px;
+        padding: 10px 12px;
+      }
+
+      #bingoTitleDisplay {
+        font-size: 1.02rem;
+      }
+
+      .primary-btn,
+      .ghost-btn,
+      .btn {
+        padding: 0.55rem 0.85rem;
+      }
+
+      #backToSetupBtn,
+      #coinBtn {
+        font-size: 0.86rem;
+        height: 40px;
+        min-height: 40px;
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      #addPlayerControls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .name-list {
+        grid-template-columns: 1fr;
+      }
+
+      #backToSetupBtn,
+      #coinBtn {
+        font-size: 0.8rem;
+        height: 38px;
+        min-height: 38px;
+        padding-left: 11px;
+        padding-right: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Setup screen -->
+  <section id="setupScreen" class="screen active" aria-label="Team setup screen">
+    <div class="setup-card">
+      <h1 class="setup-headline">Bingo Team Setup</h1>
+      <p class="setup-subtitle">Set the bingo title, team names, and player list (one name per line), then start drafting.</p>
+
+      <div class="setup-grid">
+        <div class="field field-full">
+          <label for="bingoTitleInput">Bingo title</label>
+          <input id="bingoTitleInput" class="setup-input" type="text" value="" />
+        </div>
+
+        <div class="field">
+          <label for="team1NameInput">Team 1 name</label>
+          <input id="team1NameInput" class="setup-input" type="text" value="" />
+        </div>
+
+        <div class="field">
+          <label for="team2NameInput">Team 2 name</label>
+          <input id="team2NameInput" class="setup-input" type="text" value="" />
+        </div>
+      </div>
+
+      <div class="field" style="margin-top: 14px;">
+        <label for="playersInput">Players (one name per line)</label>
+        <textarea id="playersInput" class="setup-textarea"></textarea>
+      </div>
+
+      <div class="setup-actions">
+        <button id="startDraftBtn" class="btn" type="button">Start team selection</button>
+      </div>
+      <div id="setupError" role="alert"></div>
+    </div>
+  </section>
+
+  <!-- App screen -->
+  <section id="appScreen" class="screen" aria-label="Team draft board">
+    <header class="topbar">
+      <button id="backToSetupBtn" class="ghost-btn" type="button">Back to setup</button>
+      <h2 id="bingoTitleDisplay"></h2>
+      <button id="coinBtn" class="primary-btn" type="button">Flip a coin</button>
+    </header>
+
+    <div class="board-wrap">
+      <div class="container">
+        <section class="panel" id="poolPanel" aria-label="Unassigned players">
+          <div class="panel-header">
+            <span class="panel-title">Player Pool</span>
+            <span id="poolCount" class="count-pill">0</span>
+          </div>
+          <div class="name-list" id="nameList"></div>
+        </section>
+
+        <section class="team" id="team1" aria-label="Team 1" tabindex="0">
+          <div class="team-header">
+            <h3 class="team-title">
+              <span class="team-title-text" id="team1Title">Team 1</span>
+            </h3>
+            <span id="team1Count" class="count-pill">0</span>
+          </div>
+          <div class="team-players" id="team1Players"></div>
+        </section>
+
+        <section class="team" id="team2" aria-label="Team 2" tabindex="0">
+          <div class="team-header">
+            <h3 class="team-title">
+              <span class="team-title-text" id="team2Title">Team 2</span>
+            </h3>
+            <span id="team2Count" class="count-pill">0</span>
+          </div>
+          <div class="team-players" id="team2Players"></div>
+        </section>
+      </div>
+    </div>
+
+    <div id="bottomControlsWrapper">
+      <div id="addPlayerControls">
+        <input id="addPlayerInput" type="text" placeholder="Add player name…" />
+        <button id="addPlayerBtn" class="btn" type="button">Add</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Coin flip modal -->
+  <div id="coinModal" role="dialog" aria-hidden="true" aria-label="Coin flip modal">
+    <div id="coinModalCard">
+      <button id="coinClose" aria-label="Close coin flip dialog" type="button">×</button>
+      <h3>Coin Flip</h3>
+      <div id="coinVisual"><div id="coin3d" class="heads"></div></div>
+      <div id="coinResult">—</div>
+      <div id="coinControls"><button id="coinFlip" class="btn" type="button">Flip</button></div>
+    </div>
+  </div>
+
+  <!-- Remove player modal -->
+  <div id="removeModal" role="dialog" aria-hidden="true" aria-label="Remove player confirmation dialog">
+    <div id="removeModalCard">
+      <button id="removeClose" aria-label="Close remove dialog" type="button">×</button>
+      <h3>Remove player?</h3>
+      <p id="removePrompt">Are you sure you want to remove this player?</p>
+      <div id="removeActions">
+        <button id="removeCancel" class="ghost-btn" type="button">Cancel</button>
+        <button id="removeConfirm" class="btn" type="button">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== App state ======
+    let nextIdCounter = 1;
+
+    const setupScreen = document.getElementById('setupScreen');
+    const appScreen = document.getElementById('appScreen');
+
+    const nameList = document.getElementById('nameList');
+    const team1 = document.getElementById('team1');
+    const team2 = document.getElementById('team2');
+    const team1Players = document.getElementById('team1Players');
+    const team2Players = document.getElementById('team2Players');
+
+    const poolPanel = document.getElementById('poolPanel');
+
+    const poolCount = document.getElementById('poolCount');
+    const team1Count = document.getElementById('team1Count');
+    const team2Count = document.getElementById('team2Count');
+
+    const TEAM_KEYS = {
+      team1: 'team1',
+      team2: 'team2'
+    };
+
+    let firstPickTeam = null;
+    let activePickTeam = null;
+
+    // ====== Setup screen logic ======
+    function cleanPlayerName(name) {
+      return String(name || '')
+        .replace(/\s*\(click to return\)\s*/ig, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    function parseLineSeparatedPlayers(text) {
+      return (text || '')
+        .split(/\r?\n/)
+        .map((n) => cleanPlayerName(n))
+        .filter(Boolean);
+    }
+
+    function showAppScreen() {
+      setupScreen.classList.remove('active');
+      appScreen.classList.add('active');
+    }
+
+    function showSetupScreen() {
+      appScreen.classList.remove('active');
+      setupScreen.classList.add('active');
+    }
+
+    function updateCounts() {
+      poolCount.textContent = String(nameList.children.length);
+      team1Count.textContent = String(team1Players.children.length);
+      team2Count.textContent = String(team2Players.children.length);
+    }
+
+    function otherTeamKey(teamKey) {
+      return teamKey === TEAM_KEYS.team1 ? TEAM_KEYS.team2 : TEAM_KEYS.team1;
+    }
+
+    function teamElFromKey(teamKey) {
+      return teamKey === TEAM_KEYS.team1 ? team1 : team2;
+    }
+
+    function teamKeyFromPlayersEl(teamPlayersEl) {
+      return teamPlayersEl === team1Players ? TEAM_KEYS.team1 : TEAM_KEYS.team2;
+    }
+
+    function getTeamName(teamKey) {
+      if (teamKey === TEAM_KEYS.team1) {
+        return (document.getElementById('team1Title').textContent || '').trim() || 'Team 1';
+      }
+      return (document.getElementById('team2Title').textContent || '').trim() || 'Team 2';
+    }
+
+    function getTeamSize(teamKey) {
+      return teamKey === TEAM_KEYS.team1 ? team1Players.children.length : team2Players.children.length;
+    }
+
+    function totalPickedCount() {
+      return team1Players.children.length + team2Players.children.length;
+    }
+
+    // Derive turn from the live board state (team sizes), not from raw action history.
+    // Pattern after first pick: A-B-B-A-A-B-B... where A is the first-pick team.
+    function computeNextTeamByBoardState() {
+      if (!firstPickTeam) return null;
+
+      const secondTeam = otherTeamKey(firstPickTeam);
+      const firstCount = getTeamSize(firstPickTeam);
+      const secondCount = getTeamSize(secondTeam);
+
+      if (firstCount === 0 && secondCount === 0) return null;
+
+      // If one team is smaller, they are on the clock.
+      if (firstCount !== secondCount) {
+        return firstCount > secondCount ? secondTeam : firstPickTeam;
+      }
+
+      // Equal counts (>0): alternate by parity so cadence remains B-B / A-A.
+      return (firstCount % 2 === 1) ? secondTeam : firstPickTeam;
+    }
+
+    function applyTurnHighlight() {
+      team1.classList.remove('on-clock', 'can-tap-remove');
+      team2.classList.remove('on-clock', 'can-tap-remove');
+
+      // Do not highlight until the very first pick has been placed.
+      if (!activePickTeam || totalPickedCount() < 1) return;
+
+      const onClockTeam = teamElFromKey(activePickTeam);
+      if (onClockTeam) {
+        onClockTeam.classList.add('on-clock', 'can-tap-remove');
+      }
+    }
+
+    function recalculateTurnState() {
+      if (!firstPickTeam) {
+        activePickTeam = null;
+        applyTurnHighlight();
+        return;
+      }
+
+      if (totalPickedCount() === 0) {
+        firstPickTeam = null;
+        activePickTeam = null;
+        applyTurnHighlight();
+        return;
+      }
+
+      activePickTeam = computeNextTeamByBoardState();
+      applyTurnHighlight();
+    }
+
+    function clearDraftTurnState() {
+      firstPickTeam = null;
+      activePickTeam = null;
+      applyTurnHighlight();
+    }
+
+    function flashInvalidTeamDrop(teamEl) {
+      if (!teamEl) return;
+      teamEl.classList.remove('turn-denied');
+      void teamEl.offsetWidth;
+      teamEl.classList.add('turn-denied');
+      setTimeout(() => teamEl.classList.remove('turn-denied'), 720);
+    }
+
+    function flashValidTeamDrop(teamEl) {
+      if (!teamEl) return;
+      teamEl.classList.remove('turn-accepted');
+      void teamEl.offsetWidth;
+      teamEl.classList.add('turn-accepted');
+      setTimeout(() => teamEl.classList.remove('turn-accepted'), 720);
+    }
+
+    function clearBoard() {
+      nameList.innerHTML = '';
+      team1Players.innerHTML = '';
+      team2Players.innerHTML = '';
+      nextIdCounter = 1;
+      clearDraftTurnState();
+      updateCounts();
+    }
+
+    function createNameChip(label) {
+      const cleanedLabel = cleanPlayerName(label);
+      if (!cleanedLabel) return null;
+
+      const chip = document.createElement('div');
+      chip.className = 'name';
+      chip.id = `name${nextIdCounter++}`;
+      chip.textContent = cleanedLabel;
+      setChipDraggable(chip, true);
+      chip.dataset.inTeam = 'false';
+      return chip;
+    }
+
+    function setChipDraggable(chip, canDrag) {
+      chip.draggable = !!canDrag;
+      if (canDrag) {
+        chip.setAttribute('draggable', 'true');
+      } else {
+        chip.setAttribute('draggable', 'false');
+      }
+    }
+
+    function populatePool(players) {
+      players.forEach((name) => {
+        const chip = createNameChip(name);
+        if (chip) nameList.appendChild(chip);
+      });
+      updateCounts();
+    }
+
+    function startDraftFromSetup() {
+      const bingoTitle = (document.getElementById('bingoTitleInput').value || '').trim() || 'RuneScape Bingo';
+      const team1Name = (document.getElementById('team1NameInput').value || '').trim() || 'Team 1';
+      const team2Name = (document.getElementById('team2NameInput').value || '').trim() || 'Team 2';
+      const playerText = document.getElementById('playersInput').value || '';
+      const players = parseLineSeparatedPlayers(playerText);
+      const errorEl = document.getElementById('setupError');
+
+      if (!players.length) {
+        errorEl.textContent = 'Please enter at least one player name (one per line).';
+        return;
+      }
+
+      errorEl.textContent = '';
+
+      document.getElementById('bingoTitleDisplay').textContent = bingoTitle;
+      document.getElementById('team1Title').textContent = team1Name;
+      document.getElementById('team2Title').textContent = team2Name;
+
+      clearBoard();
+      populatePool(players);
+      showAppScreen();
+      syncTopbarSideSlot();
+      requestAnimationFrame(syncTopbarSideSlot);
+    }
+
+    document.getElementById('startDraftBtn').addEventListener('click', startDraftFromSetup);
+
+    document.getElementById('backToSetupBtn').addEventListener('click', showSetupScreen);
+
+
+    function syncTopbarSideSlot() {
+      const topbar = document.querySelector('.topbar');
+      const left = document.getElementById('backToSetupBtn');
+      const right = document.getElementById('coinBtn');
+      if (!topbar || !left || !right) return;
+
+      const leftWidth = Math.ceil(Math.max(left.offsetWidth, left.scrollWidth));
+      const rightWidth = Math.ceil(Math.max(right.offsetWidth, right.scrollWidth));
+      const side = Math.max(leftWidth, rightWidth) + 22;
+      topbar.style.setProperty('--side-slot', `${Math.max(side, 140)}px`);
+    }
+
+    window.addEventListener('resize', syncTopbarSideSlot);
+    window.addEventListener('load', syncTopbarSideSlot);
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        syncTopbarSideSlot();
+      }).catch(() => {
+        // Ignore font readiness errors.
+      });
+    }
+
+    if (window.ResizeObserver) {
+      const topbarResizeObserver = new ResizeObserver(() => syncTopbarSideSlot());
+      const leftBtn = document.getElementById('backToSetupBtn');
+      const rightBtn = document.getElementById('coinBtn');
+      if (leftBtn) topbarResizeObserver.observe(leftBtn);
+      if (rightBtn) topbarResizeObserver.observe(rightBtn);
+    }
+
+    // ====== Drag and drop ======
+    document.addEventListener('dragstart', (event) => {
+      const chip = event.target.closest('.name');
+      if (!chip || chip.draggable !== true) return;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', chip.id);
+    });
+
+    function enableDropZone(zoneEl, onDropHandler) {
+      zoneEl.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        zoneEl.classList.add('drop-target-active');
+      });
+
+      zoneEl.addEventListener('dragenter', (event) => {
+        event.preventDefault();
+        zoneEl.classList.add('drop-target-active');
+      });
+
+      zoneEl.addEventListener('dragleave', (event) => {
+        if (!zoneEl.contains(event.relatedTarget)) {
+          zoneEl.classList.remove('drop-target-active');
+        }
+      });
+
+      zoneEl.addEventListener('drop', (event) => {
+        event.preventDefault();
+        zoneEl.classList.remove('drop-target-active');
+        onDropHandler(event);
+      });
+    }
+
+    function getDraggedChipFromEvent(event) {
+      const id = event.dataTransfer.getData('text/plain');
+      if (!id) return null;
+      return document.getElementById(id);
+    }
+
+    function returnChipToPool(chip) {
+      if (!chip) return;
+
+      const fromTeam = chip.closest('.team-players');
+      nameList.appendChild(chip);
+      setChipDraggable(chip, true);
+      chip.dataset.inTeam = 'false';
+
+      // Recompute turn from current board state. Removing a player is an undo,
+      // not a new pick, so we never "advance" the turn here.
+      if (fromTeam) {
+        recalculateTurnState();
+      } else {
+        recalculateTurnState();
+      }
+
+      updateCounts();
+    }
+
+    function moveChipToTeam(event, teamPlayersEl) {
+      const chip = getDraggedChipFromEvent(event);
+      if (!chip) return;
+
+      // Guard against accidental nesting or invalid drop targets.
+      if (!(teamPlayersEl instanceof HTMLElement)) return;
+
+      const destinationTeamKey = teamKeyFromPlayersEl(teamPlayersEl);
+      const fromPool = chip.parentElement === nameList;
+
+      // Only pool -> team counts as a draft pick.
+      if (!fromPool) {
+        return;
+      }
+
+      // First pick is unrestricted and sets the draft anchor team.
+      if (!firstPickTeam) {
+        firstPickTeam = destinationTeamKey;
+      } else {
+        const expectedTeam = computeNextTeamByBoardState();
+        if (expectedTeam && destinationTeamKey !== expectedTeam) {
+          flashInvalidTeamDrop(teamElFromKey(destinationTeamKey));
+          return;
+        }
+      }
+
+      teamPlayersEl.appendChild(chip);
+      setChipDraggable(chip, false);
+      chip.dataset.inTeam = 'true';
+      flashValidTeamDrop(teamElFromKey(destinationTeamKey));
+
+      recalculateTurnState();
+      updateCounts();
+    }
+
+    // Optional support: allow dropping back into pool as well.
+    function moveChipToPool(event) {
+      const chip = getDraggedChipFromEvent(event);
+      if (!chip) return;
+      returnChipToPool(chip);
+    }
+
+    enableDropZone(team1, (event) => moveChipToTeam(event, team1Players));
+    enableDropZone(team2, (event) => moveChipToTeam(event, team2Players));
+    enableDropZone(poolPanel, moveChipToPool);
+
+    // Tap/click a player in the active team to return to pool.
+    document.addEventListener('click', (event) => {
+      const chip = event.target.closest('.name');
+      if (!chip) return;
+
+      const teamPlayersEl = chip.closest('.team-players');
+      if (!teamPlayersEl) return;
+
+      const chipTeamKey = teamKeyFromPlayersEl(teamPlayersEl);
+      if (!activePickTeam || chipTeamKey !== activePickTeam) {
+        flashInvalidTeamDrop(teamElFromKey(chipTeamKey));
+        return;
+      }
+
+      openRemoveModal(chip, chipTeamKey);
+    });
+
+    // ====== Remove player modal ======
+    let pendingRemoveChip = null;
+
+    (function setupRemoveModal() {
+      const modal = document.getElementById('removeModal');
+      const closeBtn = document.getElementById('removeClose');
+      const cancelBtn = document.getElementById('removeCancel');
+      const confirmBtn = document.getElementById('removeConfirm');
+      const promptEl = document.getElementById('removePrompt');
+
+      function closeModal(restoreFocus = true) {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+
+        const prevChip = pendingRemoveChip;
+        pendingRemoveChip = null;
+
+        if (restoreFocus) {
+          if (prevChip && document.body.contains(prevChip)) {
+            prevChip.focus?.();
+          } else {
+            const onClockTeam = activePickTeam ? teamElFromKey(activePickTeam) : null;
+            if (onClockTeam) onClockTeam.focus?.();
+          }
+        }
+      }
+
+      window.openRemoveModal = function openRemoveModal(chip, teamKey) {
+        if (!chip || !teamKey) return;
+
+        const playerName = (chip.textContent || '').trim() || 'this player';
+        const teamName = getTeamName(teamKey);
+
+        promptEl.textContent = `Remove "${playerName}" from ${teamName}?`;
+        pendingRemoveChip = chip;
+
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        confirmBtn.focus();
+      };
+
+      closeBtn.addEventListener('click', () => closeModal(true));
+      cancelBtn.addEventListener('click', () => closeModal(true));
+
+      confirmBtn.addEventListener('click', () => {
+        if (pendingRemoveChip && document.body.contains(pendingRemoveChip)) {
+          returnChipToPool(pendingRemoveChip);
+        }
+        closeModal(false);
+      });
+
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) closeModal(true);
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('open')) {
+          closeModal(true);
+        }
+      });
+    })();
+
+    // ====== Add player input ======
+    function addPlayerFromInput() {
+      const input = document.getElementById('addPlayerInput');
+      const value = cleanPlayerName(input.value || '');
+      if (!value) return;
+
+      const chip = createNameChip(value);
+      if (!chip) return;
+
+      nameList.appendChild(chip);
+      input.value = '';
+      input.focus();
+      updateCounts();
+    }
+
+    document.getElementById('addPlayerBtn').addEventListener('click', addPlayerFromInput);
+    document.getElementById('addPlayerInput').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') addPlayerFromInput();
+    });
+
+    // ====== Coin modal ======
+    (function setupCoinModal() {
+      const btn = document.getElementById('coinBtn');
+      const modal = document.getElementById('coinModal');
+      const closeBtn = document.getElementById('coinClose');
+      const flipBtn = document.getElementById('coinFlip');
+      const resultEl = document.getElementById('coinResult');
+      const coin = document.getElementById('coin3d');
+
+      function resetCoinFace() {
+        coin.className = 'heads';
+        coin.style.setProperty('--end-rot', '0deg');
+        coin.style.transform = '';
+      }
+
+      function openModal() {
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        resultEl.textContent = '—';
+        resetCoinFace();
+        flipBtn.disabled = false;
+        flipBtn.focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        btn.focus();
+      }
+
+      function flip() {
+        flipBtn.disabled = true;
+        resultEl.textContent = 'Flipping…';
+
+        const isHeads = Math.random() < 0.5;
+        const endRot = isHeads ? '0deg' : '180deg';
+        coin.style.setProperty('--end-rot', endRot);
+
+        coin.classList.remove('heads', 'tails', 'flipping');
+        void coin.offsetWidth;
+        coin.classList.add('flipping');
+
+        setTimeout(() => {
+          coin.classList.remove('flipping');
+          coin.classList.add(isHeads ? 'heads' : 'tails');
+          resultEl.textContent = isHeads ? 'Heads' : 'Tails';
+          flipBtn.disabled = false;
+          flipBtn.focus();
+        }, 5000);
+      }
+
+      btn.addEventListener('click', openModal);
+      closeBtn.addEventListener('click', closeModal);
+      flipBtn.addEventListener('click', flip);
+
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) closeModal();
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('open')) closeModal();
+      });
+    })();
+
+    // Prefill setup fields for fast start.
+    updateCounts();
+    syncTopbarSideSlot();
+  </script>
+</body>
+</html>
