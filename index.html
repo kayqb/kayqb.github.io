@@ -330,7 +330,7 @@
     }
 
     .board-wrap {
-      width: min(1320px, 100%);
+      width: min(1820px, 100%);
       margin: 0 auto;
       padding: 16px;
       flex: 1;
@@ -355,6 +355,8 @@
       box-shadow: var(--shadow-md);
       min-height: 520px;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .panel-header,
@@ -378,6 +380,27 @@
       min-width: 0;
     }
 
+    .team-heading {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1 1 auto;
+    }
+
+    .team-captain {
+      font-size: 0.8rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-height: 1.1em;
+    }
+
+    .team-captain:empty {
+      display: none;
+    }
+
     .team-title-text {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -394,13 +417,35 @@
       flex: 0 0 auto;
     }
 
+    .pool-search {
+      padding: 10px 12px 0;
+    }
+
+    #poolSearchInput {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(20, 30, 50, 0.95), rgba(16, 25, 42, 0.95));
+      color: var(--text);
+      padding: 0.6rem 0.75rem;
+      outline: none;
+      font: inherit;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    #poolSearchInput:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(114, 168, 255, 0.22);
+    }
+
     .name-list {
       padding: 12px;
       display: grid;
       gap: 10px;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       align-content: start;
-      height: calc(100% - 53px);
+      flex: 1;
+      min-height: 200px;
       overflow-y: auto;
     }
 
@@ -474,7 +519,7 @@
     }
 
     #addPlayerControls {
-      width: min(1320px, 100%);
+      width: min(1820px, 100%);
       margin: 0 auto;
       padding: 14px 16px;
       display: flex;
@@ -725,7 +770,7 @@
   <section id="setupScreen" class="screen active" aria-label="Team setup screen">
     <div class="setup-card">
       <h1 class="setup-headline">Bingo Team Setup</h1>
-      <p class="setup-subtitle">Set the bingo title, team names, and player list (one name per line), then start drafting.</p>
+      <p class="setup-subtitle">Set the bingo title, team names, captains, and player list (one name per line), then start drafting.</p>
 
       <div class="setup-grid">
         <div class="field field-full">
@@ -741,6 +786,16 @@
         <div class="field">
           <label for="team2NameInput">Team 2 name</label>
           <input id="team2NameInput" class="setup-input" type="text" value="" />
+        </div>
+
+        <div class="field">
+          <label for="team1CaptainInput">Team 1 captain</label>
+          <input id="team1CaptainInput" class="setup-input" type="text" value="" />
+        </div>
+
+        <div class="field">
+          <label for="team2CaptainInput">Team 2 captain</label>
+          <input id="team2CaptainInput" class="setup-input" type="text" value="" />
         </div>
       </div>
 
@@ -771,14 +826,20 @@
             <span class="panel-title">Player Pool</span>
             <span id="poolCount" class="count-pill">0</span>
           </div>
+          <div class="pool-search">
+            <input id="poolSearchInput" type="search" placeholder="Search player pool…" aria-label="Search player pool" />
+          </div>
           <div class="name-list" id="nameList"></div>
         </section>
 
         <section class="team" id="team1" aria-label="Team 1" tabindex="0">
           <div class="team-header">
-            <h3 class="team-title">
-              <span class="team-title-text" id="team1Title">Team 1</span>
-            </h3>
+            <div class="team-heading">
+              <h3 class="team-title">
+                <span class="team-title-text" id="team1Title">Team 1</span>
+              </h3>
+              <div class="team-captain" id="team1CaptainDisplay"></div>
+            </div>
             <span id="team1Count" class="count-pill">0</span>
           </div>
           <div class="team-players" id="team1Players"></div>
@@ -786,9 +847,12 @@
 
         <section class="team" id="team2" aria-label="Team 2" tabindex="0">
           <div class="team-header">
-            <h3 class="team-title">
-              <span class="team-title-text" id="team2Title">Team 2</span>
-            </h3>
+            <div class="team-heading">
+              <h3 class="team-title">
+                <span class="team-title-text" id="team2Title">Team 2</span>
+              </h3>
+              <div class="team-captain" id="team2CaptainDisplay"></div>
+            </div>
             <span id="team2Count" class="count-pill">0</span>
           </div>
           <div class="team-players" id="team2Players"></div>
@@ -842,6 +906,7 @@
     const team2Players = document.getElementById('team2Players');
 
     const poolPanel = document.getElementById('poolPanel');
+    const poolSearchInput = document.getElementById('poolSearchInput');
 
     const poolCount = document.getElementById('poolCount');
     const team1Count = document.getElementById('team1Count');
@@ -881,9 +946,57 @@
     }
 
     function updateCounts() {
-      poolCount.textContent = String(nameList.children.length);
+      const poolTotal = nameList.children.length;
+      const poolVisible = Array.from(nameList.children).filter((chip) => chip.style.display !== 'none').length;
+
+      poolCount.textContent = poolVisible === poolTotal
+        ? String(poolTotal)
+        : `${poolVisible}/${poolTotal}`;
+
       team1Count.textContent = String(team1Players.children.length);
       team2Count.textContent = String(team2Players.children.length);
+    }
+
+    function sortPoolAlphabetically() {
+      const chips = Array.from(nameList.children);
+
+      chips.sort((a, b) => {
+        const aLabel = (a.textContent || '').trim();
+        const bLabel = (b.textContent || '').trim();
+        return aLabel.localeCompare(bLabel, undefined, {
+          sensitivity: 'base',
+          numeric: true
+        });
+      });
+
+      chips.forEach((chip) => nameList.appendChild(chip));
+    }
+
+    function applyPoolFilter() {
+      sortPoolAlphabetically();
+
+      const term = (poolSearchInput?.value || '').trim().toLowerCase();
+      const chips = Array.from(nameList.children);
+
+      chips.forEach((chip) => {
+        const label = (chip.textContent || '').toLowerCase();
+        const matches = !term || label.includes(term);
+        chip.style.display = matches ? '' : 'none';
+      });
+
+      updateCounts();
+    }
+
+    function setCaptainDisplay(displayElId, captainName) {
+      const el = document.getElementById(displayElId);
+      if (!el) return;
+
+      const cleaned = cleanPlayerName(captainName || '');
+      if (cleaned) {
+        el.textContent = `Captain: ${cleaned}`;
+      } else {
+        el.textContent = '';
+      }
     }
 
     function otherTeamKey(teamKey) {
@@ -991,8 +1104,13 @@
       team1Players.innerHTML = '';
       team2Players.innerHTML = '';
       nextIdCounter = 1;
+
+      if (poolSearchInput) {
+        poolSearchInput.value = '';
+      }
+
       clearDraftTurnState();
-      updateCounts();
+      applyPoolFilter();
     }
 
     function createNameChip(label) {
@@ -1022,13 +1140,15 @@
         const chip = createNameChip(name);
         if (chip) nameList.appendChild(chip);
       });
-      updateCounts();
+      applyPoolFilter();
     }
 
     function startDraftFromSetup() {
       const bingoTitle = (document.getElementById('bingoTitleInput').value || '').trim() || 'RuneScape Bingo';
       const team1Name = (document.getElementById('team1NameInput').value || '').trim() || 'Team 1';
       const team2Name = (document.getElementById('team2NameInput').value || '').trim() || 'Team 2';
+      const team1Captain = (document.getElementById('team1CaptainInput').value || '').trim();
+      const team2Captain = (document.getElementById('team2CaptainInput').value || '').trim();
       const playerText = document.getElementById('playersInput').value || '';
       const players = parseLineSeparatedPlayers(playerText);
       const errorEl = document.getElementById('setupError');
@@ -1044,6 +1164,9 @@
       document.getElementById('team1Title').textContent = team1Name;
       document.getElementById('team2Title').textContent = team2Name;
 
+      setCaptainDisplay('team1CaptainDisplay', team1Captain);
+      setCaptainDisplay('team2CaptainDisplay', team2Captain);
+
       clearBoard();
       populatePool(players);
       showAppScreen();
@@ -1054,6 +1177,11 @@
     document.getElementById('startDraftBtn').addEventListener('click', startDraftFromSetup);
 
     document.getElementById('backToSetupBtn').addEventListener('click', showSetupScreen);
+
+    if (poolSearchInput) {
+      poolSearchInput.addEventListener('input', applyPoolFilter);
+      poolSearchInput.addEventListener('search', applyPoolFilter);
+    }
 
 
     function syncTopbarSideSlot() {
@@ -1141,7 +1269,7 @@
         recalculateTurnState();
       }
 
-      updateCounts();
+      applyPoolFilter();
     }
 
     function moveChipToTeam(event, teamPlayersEl) {
@@ -1176,7 +1304,7 @@
       flashValidTeamDrop(teamElFromKey(destinationTeamKey));
 
       recalculateTurnState();
-      updateCounts();
+      applyPoolFilter();
     }
 
     // Optional support: allow dropping back into pool as well.
@@ -1281,7 +1409,7 @@
       nameList.appendChild(chip);
       input.value = '';
       input.focus();
-      updateCounts();
+      applyPoolFilter();
     }
 
     document.getElementById('addPlayerBtn').addEventListener('click', addPlayerFromInput);
@@ -1354,7 +1482,7 @@
     })();
 
     // Prefill setup fields for fast start.
-    updateCounts();
+    applyPoolFilter();
     syncTopbarSideSlot();
   </script>
 </body>
